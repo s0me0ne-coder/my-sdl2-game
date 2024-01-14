@@ -2,19 +2,9 @@
 #include <stdio.h>
 
 #define SUBSYSTEMS (SDL_INIT_VIDEO)
-
-/* does initialization, returns negative error code to get caught in main */
-int my_sdl_init(void) {
-    /* NULL means default video driver */
-    int error = SDL_Init(SUBSYSTEMS);
-    return error;
-}
-
-
-
 int main(void)
 {
-    int status = my_sdl_init();
+    int status = SDL_Init(SUBSYSTEMS);
     /* Error Handler */
     if (status != 0)
     {
