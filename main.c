@@ -1,9 +1,14 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_scancode.h>
+#include <SDL2/SDL_surface.h>
+#include <SDL2/SDL_video.h>
 #include <stdio.h>
 
 #define SUBSYSTEMS (SDL_INIT_VIDEO)
+
+void render_scene(SDL_Surface * surface,int window_width, int window_height,SDL_Rect object,uint32_t color);
+
 int main(void) {
   int status = SDL_Init(SUBSYSTEMS);
   /* Error Handler */
@@ -11,7 +16,7 @@ int main(void) {
     printf("An Error has occured: %s", SDL_GetError());
     return -1;
   }
-  const char *title = "My GAME!!";
+  static const char *title = "My GAME!!";
   int x = SDL_WINDOWPOS_UNDEFINED;
   int y = SDL_WINDOWPOS_UNDEFINED;
   int w = 800;
@@ -42,7 +47,7 @@ int main(void) {
       printf("Quitting the game\n");
       return 0;
     case SDL_KEYDOWN:
-      printf("you pressed a key\n");
+      //printf("you pressed a key\n");
       switch (test_event.key.keysym.sym) {
       case SDLK_w:
         myrect.y -= 10;
@@ -57,20 +62,23 @@ int main(void) {
         myrect.x += 10;
         break;
       }
-      // black out the canvas
-      SDL_FillRect(my_surface, NULL, 0);
-      // write new rectangle to canvas
-      SDL_FillRect(my_surface, &myrect, color);
-      // update window
-      SDL_UpdateWindowSurface(window);
-      R *= 2;
-      G *= 2;
-      B *= 2;
-      color = SDL_MapRGBA(my_surface->format, R, G, B, A);
+    case SDL_WINDOWEVENT_SIZE_CHANGED:
+      my_surface = SDL_GetWindowSurface(window);
     }
+    /* redraw the scene */
+    render_scene(my_surface,w,h,myrect,color);
+    // update surface
+    SDL_UpdateWindowSurface(window);
   }
   SDL_SetMainReady();
   SDL_VideoQuit();
   SDL_Quit();
   return 0;
+}
+
+void render_scene(SDL_Surface * surface,int window_width, int window_height,SDL_Rect object,uint32_t color) {
+  // blank the surface
+  SDL_FillRect(surface,NULL,0);
+  // render object
+  SDL_FillRect(surface,&object,color);
 }
