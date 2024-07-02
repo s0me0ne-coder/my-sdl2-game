@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_keycode.h>
+#include <SDL2/SDL_render.h>
 #include <SDL2/SDL_scancode.h>
 #include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_video.h>
@@ -7,7 +8,11 @@
 
 #define SUBSYSTEMS (SDL_INIT_VIDEO)
 
-void render_scene(SDL_Surface* surface, int window_width, int window_height, SDL_Rect object, uint32_t color);
+void make_a_square(SDL_Renderer* renderer, SDL_Color color, SDL_Rect* rect)
+{
+    SDL_SetRenderDrawColor(renderer, 39, 39, 245, 1);
+    SDL_RenderFillRect(renderer, rect);
+}
 
 int main(void)
 {
@@ -25,7 +30,7 @@ int main(void)
     Uint32 flags = SDL_WINDOW_SHOWN;
     SDL_Window* window = SDL_CreateWindow(title, x, y, w, h, flags);
     SDL_ShowWindow(window);
-    SDL_Surface* my_surface = SDL_GetWindowSurface(window);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     // main loop
     // draw_random_stuff(my_surface);
     SDL_Rect myrect;
@@ -34,14 +39,13 @@ int main(void)
     myrect.w = 10;
     myrect.h = 10;
     int R = 39, G = 39, B = 245, A = 1;
-    int color = SDL_MapRGBA(my_surface->format, R, G, B, A);
+    SDL_Color color = { 39, 39, 245, 1 };
 
-    SDL_FillRect(my_surface, &myrect, color);
-    SDL_UpdateWindowSurface(window);
     SDL_Event test_event;
     /*
      * Main Event Loop of the game
      */
+    SDL_SetMainReady();
     for (; test_event.type != SDL_QUIT; SDL_PollEvent(&test_event)) {
         switch (test_event.type) {
         case SDL_QUIT:
@@ -65,21 +69,18 @@ int main(void)
             }
         }
         /* redraw the scene */
-        my_surface = SDL_GetWindowSurface(window);
-        render_scene(my_surface, w, h, myrect, color);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 1);
+        SDL_RenderClear(renderer);
+
+        // we can render stuff in between these calls
+        make_a_square(renderer, color, &myrect);
         // update surface
-        SDL_UpdateWindowSurface(window);
+        SDL_RenderPresent(renderer);
+        // 60 fps limit
+        SDL_Delay(16);
     }
-    SDL_SetMainReady();
+    SDL_DestroyRenderer(renderer);
     SDL_VideoQuit();
     SDL_Quit();
     return 0;
-}
-
-void render_scene(SDL_Surface* surface, int window_width, int window_height, SDL_Rect object, uint32_t color)
-{
-    // blank the surface
-    SDL_FillRect(surface, NULL, 0);
-    // render object
-    SDL_FillRect(surface, &object, color);
 }
